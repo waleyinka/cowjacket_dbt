@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: int_customer_orders
+    description: >
+      Stable, reusable representation of customer ordering activity.
+      Each row represents a single order line item, contextualized by its
+      associated order and customer. This model centralizes the order-to-item
+      relationship to support downstream revenue and behavior analysis.
+
+    columns:
+      - name: order_item_id
+        description: Unique identifier for the order line item.
+
+      - name: order_id
+        description: Identifier of the order event.
+
+      - name: customer_id
+        description: Identifier of the customer who placed the order.
+
+      - name: order_date
+        description: Date the order was placed.
+
+      - name: total_amount
+        description: Total value of the order at the time it was placed.
+
+      - name: product_id
+        description: Identifier of the product included in the order.
+
+      - name: quantity
+        description: Number of units of the product purchased.
+
+      - name: line_total
+        description: Monetary value of this order line item.
+    
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "order_id is not null"

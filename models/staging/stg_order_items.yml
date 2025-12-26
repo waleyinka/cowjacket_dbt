@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: stg_order_items
+    description: >
+      Cleaned and standardized view of order line items.
+      Each row represents a single product included in an order.
+
+    columns:
+      - name: order_item_id
+        description: Unique identifier for an order line item.
+
+      - name: order_id
+        description: Identifier of the order this item belongs to.
+
+      - name: product_id
+        description: Identifier of the product purchased.
+
+      - name: quantity
+        description: Number of units of the product purchased.
+
+      - name: line_total
+        description: Monetary value of this line item.

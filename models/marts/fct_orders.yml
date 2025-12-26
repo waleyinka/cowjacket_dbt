@@ -1,0 +1,33 @@
+version: 2
+
+models:
+  - name: fct_orders
+    description: >
+      Order-level revenue fact table.
+      Each row represents a single customer order with aggregated revenue
+      and item metrics, designed to support revenue trend and performance analysis.
+
+    columns:
+      - name: order_id
+        description: Unique identifier for the order.
+        tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: Identifier of the customer who placed the order.
+
+      - name: order_date
+        description: Date the order was placed.
+
+      - name: order_revenue
+        description: Total revenue attributed to the order.
+
+      - name: total_items
+        description: Total number of items purchased in the order.
+
+      - name: order_line_count
+        description: Number of distinct line items in the order.
+
+      - name: avg_line_value
+        description: Average revenue per order line.

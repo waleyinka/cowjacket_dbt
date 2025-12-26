@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: stg_products
+    description: >
+      Cleaned and standardized view of the raw products table.
+      This model preserves the current-state nature of the product catalog
+      while providing consistent naming and types for downstream use.
+
+    columns:
+      - name: product_id
+        description: Unique identifier for a product.
+
+      - name: product_name
+        description: name of the product.
+
+      - name: category
+        description: Business-defined product category.
+
+      - name: price
+        description: Current listed price of the product.

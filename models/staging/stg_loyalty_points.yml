@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: stg_loyalty_points
+    description: >
+      Cleaned and standardized record of loyalty point transactions.
+      Each row represents a single points-earning event. The meaning of
+      points and their sources may evolve over time as business rules change.
+
+    columns:
+      - name: loyalty_id
+        description: Unique identifier for the loyalty points transaction.
+
+      - name: customer_id
+        description: Identifier of the customer who earned the points.
+
+      - name: points_earned
+        description: Number of loyalty points earned in the transaction.
+
+      - name: transaction_date
+        description: Date the points were awarded.
+
+      - name: points_source
+        description: >
+          Business-defined source of the loyalty points
+          (e.g. order, promotion, referral).

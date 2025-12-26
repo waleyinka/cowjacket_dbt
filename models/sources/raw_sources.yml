@@ -1,0 +1,129 @@
+version: 2
+
+sources:
+  - name: raw
+    database: COWJACKET
+    schema: RAW
+    description: >
+      Raw operational data loaded into Snowflake.
+      These tables represent authoritative source data and are not modified by dbt.
+
+    tables:
+      - name: products
+        description: >
+          Snapshot of the current product catalog at the time of ingestion.
+          Attributes such as price and category may change over time to reflect
+          evolving business definitions. Changes are expected and do not imply
+          historical restatement unless explicitly handled downstream.
+
+        columns:
+          - name: product_id
+            description: Unique identifier for a product.
+            tests:
+              - not_null
+              - unique
+
+          - name: product_name
+            description: name of the product as defined by the business.
+
+          - name: category
+            description: >
+              Business-defined product category.
+              Categories may evolve as the catalog is reorganized.
+
+          - name: price
+            description: >
+              Current listed price of the product at the time of ingestion.
+              Price changes reflect business updates, not corrections.
+
+      - name: orders
+        description: >
+          Record of customer order events.
+          Each row represents a completed order as recorded by the source system.
+
+        columns:
+          - name: order_id
+            description: Unique identifier for an order.
+            tests:
+              - not_null
+              - unique
+
+          - name: customer_id
+            description: Identifier of the customer who placed the order.
+
+          - name: order_date
+            description: Date the order was placed.
+
+          - name: total_amount
+            description: Total monetary value of the order at order time.
+
+      - name: order_items
+        description: >
+          Line-level detail of products included in customer orders.
+          Each row represents a single product within an order.
+
+        columns:
+          - name: order_item_id
+            description: Unique identifier for an order line item.
+            tests:
+              - not_null
+              - unique
+
+          - name: order_id
+            description: Identifier of the order this item belongs to.
+
+          - name: product_id
+            description: Identifier of the product purchased.
+
+          - name: quantity
+            description: Number of units purchased.
+
+          - name: line_total
+            description: Monetary value of the line item.
+      
+      - name: customers
+        description: >
+          Snapshot of customer records as provided by the source system.
+          Each row represents a single customer and reflects the latest
+          known state at the time of ingestion.
+
+        columns:
+          - name: customer_id
+            description: Unique identifier for the customer.
+            tests:
+              - not_null
+              - unique
+
+          - name: full_name
+            description: Customer’s full name.
+
+          - name: email
+            description: Customer email address.
+
+          - name: join_date
+            description: Date the customer joined or was first recorded.
+
+      - name: loyalty_points
+        description: >
+          Record of loyalty point transactions awarded to customers.
+          Each row represents a single points-earning event. The business
+          meaning and sources of loyalty points may evolve over time.
+
+        columns:
+          - name: loyalty_id
+            description: Unique identifier for the loyalty points transaction.
+            tests:
+              - not_null
+              - unique
+
+          - name: customer_id
+            description: Identifier of the customer who earned the points.
+
+          - name: points_earned
+            description: Number of loyalty points earned.
+
+          - name: transaction_date
+            description: Date the loyalty points were awarded.
+
+          - name: source
+            description: Business-defined source of the loyalty points.

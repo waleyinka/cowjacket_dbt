@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: >
+      Cleaned and standardized view of customer records.
+      Each row represents a single customer as defined by the source system.
+
+    columns:
+      - name: customer_id
+        description: Unique identifier for the customer.
+
+      - name: full_name
+        description: Customer’s full name.
+
+      - name: email
+        description: Customer email address.
+
+      - name: join_date
+        description: Date the customer joined or was first recorded.
