@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This repository contains a full dbt Cloud analytics implementation for CowJacket, built on Snowflake, with a strong emphasis on correctness, clarity, and long-term maintainability.
+This repository contains a full **dbt Cloud analytics implementation for CowJacket**, built on **Snowflake**, with a strong emphasis on correctness, clarity, and long-term maintainability.
 
 The goal of the project is not just to transform data, but to demonstrate how to design an analytics system that:
 
@@ -16,23 +16,23 @@ The goal of the project is not just to transform data, but to demonstrate how to
 
  - Provides operational observability directly in the warehouse
 
-This project is intentionally designed to resemble a real production analytics stack, even though the dataset is small.
+This project is intentionally designed to resemble a **real production analytics stack**, even though the dataset is small.
 
 ---
 
 ## Project Details
 
-- Data Warehouse: Snowflake
+- **Data Warehouse**: Snowflake
 
-- Transformation Tool: dbt Cloud
+- **Transformation Tool**: dbt Cloud
 
-- Environments: Development, Staging (CI), Production
+- **Environments**: Development, Staging (CI), Production
 
-- Modeling Approach: Layered analytics engineering
+- **Modeling Approach**: Layered analytics engineering
 
-- CI Strategy: Full build CI (state-based CI supported by design)
+- **CI Strategy**: Full build CI (state-based CI supported by design)
 
-- Observability: Warehouse-native dbt run metadata logging
+- **Observability**: Warehouse-native dbt run metadata logging
 
 ---
 
@@ -40,7 +40,7 @@ This project is intentionally designed to resemble a real production analytics s
 
 At a high level, the system follows this flow:
 
-`` bash
+```bash
 Snowflake (RAW schema)
         ↓
    dbt Sources
@@ -50,12 +50,11 @@ Snowflake (RAW schema)
  Intermediate Models (int_*)
         ↓
  Business Marts (fct_*)
-
 ```
 
 Key architectural principles:
 
- - dbt **never mutates** raw data
+ - dbt **never mutates raw data**
 
  - Each layer has a clearly defined responsibility
 
@@ -99,7 +98,7 @@ A **direct promotion strategy** is used: once CI passes, models can be promoted 
 
 ## Data Sources
 
-Raw operational data is loaded into Snowflake under a dedicated RAW schema and declared in dbt as sources.
+Raw operational data is loaded into Snowflake under a dedicated `RAW` schema and declared in dbt as sources.
 
 ### Source Tables
 
@@ -109,7 +108,7 @@ Raw operational data is loaded into Snowflake under a dedicated RAW schema and d
 `order_items`
 `loyalty_points`
 
-These tables are treated as authoritative and immutable.
+These tables are treated as **authoritative and immutable**.
 Any inconsistencies or changes are handled downstream via transformations, not by modifying raw data.
 
 Source definitions include:
@@ -126,7 +125,7 @@ Source definitions include:
 
 ### Purpose
 
-The staging layer provides clean, predictable representations of raw data.
+The staging layer provides clean, **predictable representations** of raw data.
 
 Staging models:
 
@@ -136,7 +135,7 @@ Staging models:
 
  - Standardize naming and types
 
- - Contain no joins, aggregations, or business logic
+ - Contain **no joins**, **aggregations**, or **business logic**
 
 ### Staging Models
 
@@ -154,7 +153,7 @@ This layer isolates upstream volatility and reduces cognitive load for downstrea
 
 ### Purpose
 
-The intermediate layer centralizes relational complexity and grain decisions.
+The intermediate layer centralizes **relational complexity and grain decisions**.
 
 Rather than repeating complex joins across marts, relationships are resolved once and reused.
 
@@ -162,7 +161,7 @@ Rather than repeating complex joins across marts, relationships are resolved onc
 
 `int_customer_orders`
 
- - Grain: one row per order item
+ - Grain: **one row per order item**
 
  - Joins orders and order_items
 
@@ -180,7 +179,7 @@ This model acts as a stable foundation for multiple downstream analytical use ca
 
 ### Purpose
 
-Marts are where business meaning is asserted.
+Marts are where **business meaning** is asserted.
 
 This is the only layer where:
 
@@ -196,7 +195,7 @@ This is the only layer where:
 
 `fct_orders`
 
- - Grain: one row per order
+ - Grain: **one row per order**
 
  - Aggregates item-level truth into order-level metrics
 
@@ -210,7 +209,7 @@ This is the only layer where:
 
     - Average line value
 
-This model is materialized as a table in a dedicated schema (`ANALYTICS_MARTS`) and includes an environment guardrail to prevent materialization in development.
+This model is materialized as a **table** in a dedicated schema (`ANALYTICS_MARTS`) and includes an environment guardrail to prevent materialization in development.
 
 ---
 
@@ -265,14 +264,14 @@ dbt build
 
 ### State-Based CI Design
 
-The project architecture supports state-based CI with deferral using:
+The project architecture supports **state-based CI with deferral** using:
 
 ```bash
 dbt build --select state:modified+ --defer
 ```
 
-However, during development on the dbt Cloud Starter trial, cross-job artifact persistence is not reliably available.
-For this reason, CI is intentionally locked to full builds while preserving a design that can switch to state-based CI without any code changes once artifact persistence is enabled.
+However, during development on the **dbt Cloud Starter trial**, cross-job artifact persistence is not reliably available.
+For this reason, CI is intentionally locked to full builds while preserving a design that can switch to state-based **CI without any code changes** once artifact persistence is enabled.
 
 This trade-off is explicitly documented and intentional.
 
@@ -290,7 +289,7 @@ Exposures are used to declare who consumes the data and why.
 
  - Maturity: High
 
- - Depends On: fct_orders
+ - Depends On: `fct_orders`
 
 Exposures improve lineage clarity and communicate the real-world impact of changes to downstream consumers.
 
@@ -298,7 +297,7 @@ Exposures improve lineage clarity and communicate the real-world impact of chang
 
 ## Observability & Logging
 
-Operational observability is implemented using an on-run-end hook that logs dbt run metadata directly into Snowflake.
+Operational observability is implemented using an `on-run-end` hook that logs dbt run metadata directly into Snowflake.
 
 ### Logged Metadata Includes
 
@@ -330,7 +329,7 @@ This provides a warehouse-native audit trail for:
 
  - Historical analysis of dbt behavior
 
-Observability is treated as a first-class feature, not an afterthought.
+Observability is treated as a **first-class feature**, not an afterthought.
 
 ---
 
@@ -376,7 +375,6 @@ dbt build --select stg_*
 ├── macros/
 ├── tests/
 └── README.md
-
 ```
 
 ---
@@ -415,6 +413,6 @@ Potential next steps include:
 
 ## Final Note
 
-This project reflects an analytics engineering mindset, prioritizing clarity, trust, and long-term sustainability over quick wins.
+This project reflects an **analytics engineering mindset**, prioritizing clarity, trust, and long-term sustainability over quick wins.
 
 It is designed to scale in complexity without sacrificing understanding.
