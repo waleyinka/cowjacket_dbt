@@ -35,4 +35,5 @@ models:
     
     tests:
       - dbt_utils.expression_is_true:
-          expression: "order_id is not null"
+          arguments:
+            expression: "order_id is not null"
