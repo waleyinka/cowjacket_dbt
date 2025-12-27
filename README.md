@@ -110,10 +110,8 @@ dbt **never executes** these scripts.
 snowflake/
 ├── README.md
 ├── 01_database_and_warehouse.sql
-├── 02_roles_and_permissions.sql
-├── 03_raw_schema.sql
-├── 04_raw_tables.sql
-└── 05_seed_data.sql
+├── 02_tables.sql
+└── 03_seed_data.sql
 ```
 
 ### Snowflake Execution Order
@@ -122,13 +120,9 @@ To provision the warehouse from scratch, run the SQL files in this order:
 
  - `01_database_and_warehouse.sql`
 
- - `02_roles_and_permissions.sql`
+ - `02_tables.sql`
 
- - `03_raw_schema.sql`
-
- - `04_raw_tables.sql`
-
- - `05_seed_data.sql`
+ - `03_seed_data.sql`
 
 Once completed, the dbt project can be run safely.
 
