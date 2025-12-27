@@ -1,8 +1,8 @@
 # CowJacket dbt Cloud Analytics
 
-## Project Overview
+## 1. Project Overview
 
-This repository contains a full dbt Cloud analytics implementation for CowJacket, built on Snowflake, with a strong emphasis on correctness, clarity, and long-term maintainability.
+This repository contains a full **dbt Cloud analytics implementation for CowJacket**, built on **Snowflake**, with a strong emphasis on correctness, clarity, and long-term maintainability.
 
 The goal of the project is not just to transform data, but to demonstrate how to design an analytics system that:
 
@@ -16,31 +16,33 @@ The goal of the project is not just to transform data, but to demonstrate how to
 
  - Provides operational observability directly in the warehouse
 
-This project is intentionally designed to resemble a real production analytics stack, even though the dataset is small.
+This project is intentionally designed to resemble a **real production analytics stack**, even though the dataset is small.
 
 ---
 
-## Project Details
+## 2. Technology Stack
 
-- Data Warehouse: Snowflake
+- **Data Warehouse**: Snowflake
 
-- Transformation Tool: dbt Cloud
+- **Transformation Tool**: dbt Cloud
 
-- Environments: Development, Staging (CI), Production
+- **Version Control**: GitHub
 
-- Modeling Approach: Layered analytics engineering
+- **Environments**: Development, Staging (CI), Production
 
-- CI Strategy: Full build CI (state-based CI supported by design)
+- **Modeling Approach**: Layered analytics engineering
 
-- Observability: Warehouse-native dbt run metadata logging
+- **CI Strategy**: Full build CI (state-based CI supported by design)
+
+- **Observability**: Warehouse-native dbt run metadata logging
 
 ---
 
-## Architecture Overview
+## 3. High-Level Architecture
 
 At a high level, the system follows this flow:
 
-`` bash
+```bash
 Snowflake (RAW schema)
         ↓
    dbt Sources
@@ -50,22 +52,119 @@ Snowflake (RAW schema)
  Intermediate Models (int_*)
         ↓
  Business Marts (fct_*)
-
 ```
 
-Key architectural principles:
+Key architectural decisions:
+ 
+ - Raw data is immutable and owned by Snowflake
 
- - dbt **never mutates** raw data
+ - dbt **never create or mutates raw data**
 
  - Each layer has a clearly defined responsibility
 
  - Business meaning is asserted only at the mart layer
 
- - Environment boundaries are enforced through schema separation and guardrails
+ - Environment act as safety boundaries through schema separation and guardrails
 
 ---
 
-## Environments & Promotion Strategy
+## 4. Snowflake SQL Layer (Data Foundation)
+
+### Why Snowflake SQL Lives Outside dbt
+
+dbt **assumes raw data already exists**.
+It is not responsible for ingestion, provisioning, or access control.
+
+For this reason, all Snowflake setup SQL is versioned **outside dbt**, but **inside the same repository**, to ensure:
+
+ - Full reproducibility
+
+ - Clear ownership boundaries
+
+ - Transparent infrastructure setup
+
+ - Separation of concerns
+
+This mirrors real-world analytics teams, where platform or data engineering teams provision the warehouse and analytics engineers build transformations on top.
+
+### Snowflake Responsibilities
+
+Snowflake SQL in this project is responsible for:
+
+ - Creating the database
+
+ - Creating warehouses
+
+ - Defining roles and permissions
+
+ - Creating the RAW schema
+
+ - Creating raw tables
+
+ - Seeding example data for the case study
+
+dbt **never executes** these scripts.
+
+### Snowflake Directory Structure
+```bash
+snowflake/
+├── README.md
+├── 01_database_and_warehouse.sql
+├── 02_roles_and_permissions.sql
+├── 03_raw_schema.sql
+├── 04_raw_tables.sql
+└── 05_seed_data.sql
+```
+
+### Snowflake Execution Order
+
+To provision the warehouse from scratch, run the SQL files in this order:
+
+ - `01_database_and_warehouse.sql`
+
+ - `02_roles_and_permissions.sql`
+
+ - `03_raw_schema.sql`
+
+ - `04_raw_tables.sql`
+
+ - `05_seed_data.sql`
+
+Once completed, the dbt project can be run safely.
+
+### RAW Schema Philosophy
+
+The `RAW` schema is treated as:
+
+ - Immutable
+
+ - Authoritative
+
+ - Outside dbt’s control
+
+All inconsistencies, renaming, or corrections are handled downstream in dbt models, not by modifying raw data.
+
+---
+
+## 5. dbt Project Structure
+
+```bash
+.
+├── dbt_project.yml
+├── packages.yml
+├── models/
+│   ├── sources/
+│   ├── staging/
+│   ├── intermediate/
+│   ├── marts/
+│   └── exposures/
+├── macros/
+├── tests/
+├── snowflake/
+└── README.md
+```
+
+## 6. Environments & Promotion Strategy
 
 The dbt Cloud project is configured with three environments.
 
@@ -75,7 +174,7 @@ The dbt Cloud project is configured with three environments.
 
  - Models are disposable
 
- - Developers can experiment freely
+ - Fast iteration
 
 **Staging (CI)**
 
@@ -83,7 +182,7 @@ The dbt Cloud project is configured with three environments.
 
  - All models and tests must pass
 
- - Acts as the gatekeeper before production
+ - Acts as the trust gate before production
 
 **Production**
 
@@ -97,22 +196,23 @@ A **direct promotion strategy** is used: once CI passes, models can be promoted 
 
 ---
 
-## Data Sources
+## 7. Data Sources (dbt Sources)
 
-Raw operational data is loaded into Snowflake under a dedicated RAW schema and declared in dbt as sources.
+Raw operational data is loaded into Snowflake under a dedicated `RAW` schema and declared in dbt as sources.
 
 ### Source Tables
 
-`customers`
-`products`
-`orders`
-`order_items`
-`loyalty_points`
+ - `customers`
 
-These tables are treated as authoritative and immutable.
-Any inconsistencies or changes are handled downstream via transformations, not by modifying raw data.
+ - `products`
 
-Source definitions include:
+ - `orders`
+
+ - `order_items`
+
+ - `loyalty_points`
+
+Source definitions includes:
 
  - Table-level documentation
 
@@ -122,13 +222,13 @@ Source definitions include:
 
 ---
 
-## Staging Layer
+## 8. Staging Layer
 
 ### Purpose
 
-The staging layer provides clean, predictable representations of raw data.
+The staging layer provides clean, **predictable representations** of raw data.
 
-Staging models:
+Rules of staging models:
 
  - Rename columns consistently
 
@@ -136,33 +236,37 @@ Staging models:
 
  - Standardize naming and types
 
- - Contain no joins, aggregations, or business logic
+ - Contain **no joins**, **aggregations**, or **business logic**
 
 ### Staging Models
 
-`stg_customers`
-`stg_products`
-`stg_orders`
-`stg_order_items`
-`stg_loyalty_points`
+ - `stg_customers`
+
+ - `stg_products`
+ 
+ - `stg_orders`
+ 
+ - `stg_order_items`
+ 
+ - `stg_loyalty_points`
 
 This layer isolates upstream volatility and reduces cognitive load for downstream modeling.
 
 ---
 
-## Intermediate Layer
+## 9. Intermediate Layer
 
 ### Purpose
 
-The intermediate layer centralizes relational complexity and grain decisions.
+The intermediate layer centralizes **relational complexity and grain decisions**.
 
 Rather than repeating complex joins across marts, relationships are resolved once and reused.
 
-### Core Intermediate Model
+### Core Model
 
 `int_customer_orders`
 
- - Grain: one row per order item
+ - Grain: **one row per order item**
 
  - Joins orders and order_items
 
@@ -176,11 +280,11 @@ This model acts as a stable foundation for multiple downstream analytical use ca
 
 ---
 
-## Mart Layer
+## 10. Mart Layer
 
 ### Purpose
 
-Marts are where business meaning is asserted.
+Marts asserts **business meaning**.
 
 This is the only layer where:
 
@@ -196,7 +300,7 @@ This is the only layer where:
 
 `fct_orders`
 
- - Grain: one row per order
+ - Grain: **one row per order**
 
  - Aggregates item-level truth into order-level metrics
 
@@ -209,14 +313,20 @@ This is the only layer where:
     - Line count
 
     - Average line value
+ 
+ - Materialized as a **table**
 
-This model is materialized as a table in a dedicated schema (`ANALYTICS_MARTS`) and includes an environment guardrail to prevent materialization in development.
+ - Written to a dedicated schema (`ANALYTICS_MARTS`)
+
+ - Guarded to prevent dev materialization
+
+This model represents the authoritative revenue view.
 
 ---
 
 ## Testing Strategy
 
-Testing is applied **intentionally**, aligned with each layer’s responsibility.
+Testing is applied **intentionally**, and aligned with each model’s responsibility.
 
 ### Source Tests
 
@@ -232,7 +342,7 @@ Testing is applied **intentionally**, aligned with each layer’s responsibility
 
  - Minimal or no tests
 
- - Staging enforces structure, not correctness
+ - Staging enforces structure over correctness
 
 ### Intermediate Models
 
@@ -252,7 +362,9 @@ Business-critical assertions, including:
 
 Tests are designed to surface violated assumptions, not to over-constrain valid data evolution.
 
-## Continuous Integration (CI/CD)
+---
+
+## 12. Continuous Integration (CI/CD)
 
 A CI job runs in the staging environment to validate all models and tests on every change.
 
@@ -265,24 +377,24 @@ dbt build
 
 ### State-Based CI Design
 
-The project architecture supports state-based CI with deferral using:
+The project architecture supports **state-based CI with deferral** using:
 
 ```bash
 dbt build --select state:modified+ --defer
 ```
 
-However, during development on the dbt Cloud Starter trial, cross-job artifact persistence is not reliably available.
-For this reason, CI is intentionally locked to full builds while preserving a design that can switch to state-based CI without any code changes once artifact persistence is enabled.
+However, during development on the **dbt Cloud Starter trial**, cross-job artifact persistence is not reliably available.
+For this reason, CI is intentionally locked to full builds while preserving a design that can switch to state-based **CI without any code changes** once artifact persistence is enabled.
 
 This trade-off is explicitly documented and intentional.
 
 ---
 
-## Exposures
+## 13. Exposures
 
 Exposures are used to declare who consumes the data and why.
 
-### Example Exposure
+### Example:
 
  - Name: order_level_revenue_dashboard
 
@@ -290,19 +402,19 @@ Exposures are used to declare who consumes the data and why.
 
  - Maturity: High
 
- - Depends On: fct_orders
+ - Depends On: `fct_orders`
 
-Exposures improve lineage clarity and communicate the real-world impact of changes to downstream consumers.
+This improves lineage clarity and communicate the real-world impact of changes to downstream consumers.
 
 ---
 
-## Observability & Logging
+## 14. Observability & Logging
 
-Operational observability is implemented using an on-run-end hook that logs dbt run metadata directly into Snowflake.
+Operational observability is implemented using an `on-run-end` hook that logs dbt run metadata directly into Snowflake.
 
 ### Logged Metadata Includes
 
- - Model or test name
+ - Model & test names
 
  - Resource type
 
@@ -322,7 +434,7 @@ Operational observability is implemented using an on-run-end hook that logs dbt 
 COWJACKET.OBSERVABILITY.DBT_RUN_LOGS
 ```
 
-This provides a warehouse-native audit trail for:
+This enables:
 
  - Performance monitoring
 
@@ -330,17 +442,17 @@ This provides a warehouse-native audit trail for:
 
  - Historical analysis of dbt behavior
 
-Observability is treated as a first-class feature, not an afterthought.
+Observability is treated as a **first-class feature**, not an afterthought.
 
 ---
 
-## Running the Project
+## 15. Running the Project
 
 ### Prerequisites
 
  - Snowflake account
 
- - dbt Cloud project connected to this repository
+ - dbt Cloud project connected to this repo
 
  - Required Snowflake roles, warehouse, and schemas configured
 
@@ -361,43 +473,25 @@ Run staging only:
 dbt build --select stg_*
 ```
 
-## Repository Structure
-
-```bash
-.
-├── dbt_project.yml
-├── packages.yml
-├── models/
-│   ├── sources/
-│   ├── staging/
-│   ├── intermediate/
-│   ├── marts/
-│   └── exposures/
-├── macros/
-├── tests/
-└── README.md
-
-```
-
 ---
 
-## Key Design Principles
+## 16. Key Design Principles
 
  - Raw data is authoritative and immutable
 
- - Meaning is asserted only at the mart layer
+ - dbt does not ingest data
 
- - Complexity is centralized, not duplicated
+ - Layers manage risk
 
- - Tests encode assumptions, not preferences
+ - Grain decisions are architectural
 
- - Environment boundaries protect truth
+ - Tests protect assumptions
 
- - Observability is built in, not bolted on
+ - Observability enables trust
 
 ---
 
-## Future Enhancements
+## 17. Future Enhancements
 
 Potential next steps include:
 
@@ -415,6 +509,6 @@ Potential next steps include:
 
 ## Final Note
 
-This project reflects an analytics engineering mindset, prioritizing clarity, trust, and long-term sustainability over quick wins.
+This project is intentionally designed to be understandable before it is clever.
 
-It is designed to scale in complexity without sacrificing understanding.
+It prioritizes clarity, trust, and long-term maintainability over shortcuts.
