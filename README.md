@@ -52,6 +52,9 @@ Snowflake (RAW schema)
  Intermediate Models (int_*)
         ↓
  Business Marts (fct_*)
+
+[architecture](/images/raw_sources.png)
+
 ```
 
 Key architectural decisions:
@@ -272,6 +275,8 @@ Rather than repeating complex joins across marts, relationships are resolved onc
 
 This model acts as a stable foundation for multiple downstream analytical use cases.
 
+[int_cust_orders](/images/int_cust_orders.png)
+
 ---
 
 ## 10. Mart Layer
@@ -315,6 +320,8 @@ This is the only layer where:
  - Guarded to prevent dev materialization
 
 This model represents the authoritative revenue view.
+
+[fct_orders](/images/fct_orders.png)
 
 ---
 
@@ -436,8 +443,9 @@ This enables:
 
  - Historical analysis of dbt behavior
 
-Observability is treated as a **first-class feature**, not an afterthought.
+Observability is treated as a **first-class feature**, not an afterthought. This will help monitor performance, debug issues, and track changes over time.
 
+[dbt_run_log](/images/dbt_run_log.png)
 ---
 
 ## 15. Running the Project
